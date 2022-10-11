@@ -18,9 +18,16 @@ https://youtu.be/1QRGDIqNlME
 ## -------------->> Basic Features <<----------------------
 
 
+### Some Other auto response
+*sim message
+*sim ongroupleft
+-> onNicknameChange
+-> onReactionAdded or Removed
+..etc
+
 #### To get current weather of any city
 *sim how are you?  
-returns reply im good.  
+returns with reply im good.  
 
 #### To find the meaning of words
 -> meaning of any_word  
