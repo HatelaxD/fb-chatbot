@@ -18,13 +18,9 @@ https://youtu.be/1QRGDIqNlME
 ## -------------->> Basic Features <<----------------------
 
 
-### Message reply
-*Sim  
-Reply Please enter full message
-
 #### To get current weather of any city
--> weather of city_name  
-returns current weather of entered city  
+*sim how are you?  
+returns reply im good.  
 
 #### To find the meaning of words
 -> meaning of any_word  
