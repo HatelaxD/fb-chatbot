@@ -19,7 +19,7 @@ https://youtu.be/1QRGDIqNlME
 
 
 ### Some Other auto response
-*sim message
+*sim you have not entered a message
 *sim ongroupleft
 -> onNicknameChange
 -> onReactionAdded or Removed
