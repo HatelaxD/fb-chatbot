@@ -39,7 +39,7 @@ returns translated text of hello
 returns details of corona virus  
 
 #### All conversion (units, currency)
--> convert 1 usd to npr  
+*sim convert 1 usd to npr  
 -> convert 1 cal to joule  
 returns converted value  
 
