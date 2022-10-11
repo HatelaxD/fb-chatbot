@@ -1,470 +1,281 @@
-# Facebook Messenger
+[![Downloads](https://pepy.tech/badge/chatbotai)](https://pepy.tech/project/chatbotai)
+[![PyPI version](https://badge.fury.io/py/chatbotAI.svg)](https://badge.fury.io/py/chatbotAI)
+![Upload Python Package](https://github.com/ahmadfaizalbh/Chatbot/workflows/Upload%20Python%20Package/badge.svg)
+[![CodeQL](https://github.com/ahmadfaizalbh/Chatbot/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/ahmadfaizalbh/Chatbot/actions/workflows/codeql-analysis.yml)
 
-## How to Deploy & Restart
-
-About Flask server:
-0. prepare python3.7
-1. `. venv/bin/activate` activate virtual environment
-2. `. ./env.sh` export all the environment variables needed
-3. `nohup flask run --reload &` run flask in background
-4. How to check the server log?: `tail -f nohup.out` (Ctrl+C to exit)
-
-How to Reset Ngrok's Webhook URL (in local terminal):
-1. `gcloud beta compute ssh --zone "asia-east1-b" "datateam-airflow"  --project "pycontw-225217" -- -NL 4040:localhost:4040`
-2. open your browser and go to http://localhost:4040/status
-3. `nohup ./ngrok http 5000 &`
-4. port-forward ngrok to your local: `gcloud beta compute ssh --zone "asia-east1-b" "datateam-airflow"  --project "pycontw-225217" -- -NL 4040:localhost:4040`
-5. check the https ngrok url:
-
-<img width="472" alt="Screen Shot 2022-01-22 at 9 41 42 PM" src="https://user-images.githubusercontent.com/9366404/150640772-9a2cbe44-d956-4917-9eb6-66de76112560.png">
+# ChatBotAI
+Python chatbot AI that helps in creating a python based chatbot with
+minimal coding. This provides both bots AI and chat handler and also
+allows easy integration of REST API's and python function calls which
+makes it unique and more powerful in functionality. This AI provides
+numerous features like learn, memory, conditional switch, topic-based
+conversation handling, etc.
 
 
-How to Reset Ngrok's Webhook URL (in GCP browser SSH):
-1. `nohop ./ngrok http 5000 > /output/null &` run ngrok in background
-2. `export WEBHOOK_URL="$(curl http://localhost:4040/api/tunnels | jq ".tunnels[0].public_url")"
-` export the ngrok url as a variable
-3. `printenv WEBHOOK_URL` check the https ngork url
+![Demo GUI](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/demo_gui.gif)
 
+![Demo](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/demo.gif)
+![Clothing assistance](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/clothing.gif)
+![Remainder](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/reminder.gif)
 
-Go to Facebook Developers to paste the ngrok url:
-1. go to https://developers.facebook.com/
-2. update the ngrok url: 
-<img width="531" alt="Screen Shot 2022-01-22 at 9 55 19 PM" src="https://user-images.githubusercontent.com/9366404/150641240-1122e5df-1e77-456f-87fb-0a161c16c9d5.png">
-
-
-
-[![PyPI](https://img.shields.io/pypi/v/fbmessenger.svg?maxAge=2592000)](https://pypi.python.org/pypi/fbmessenger)
-[![Build Status](https://travis-ci.org/rehabstudio/fbmessenger.svg?branch=master)](https://travis-ci.org/rehabstudio/fbmessenger)
-[![Coverage Status](https://coveralls.io/repos/github/rehabstudio/fbmessenger/badge.svg?branch=master)](https://coveralls.io/github/rehabstudio/fbmessenger?branch=master)
-[![PyPI](https://img.shields.io/pypi/l/fbmessenger.svg?maxAge=2592000)](https://pypi.python.org/pypi/fbmessenger)
-
-A python library to communicate with the Facebook Messenger API's
-
-## Table of Contents
-<!-- MarkdownTOC depth="2" autolink="true" autoanchor="true" bracket="round" -->
-
-- [Installation](#installation)
-- [Example usage with Flask](#example-usage-with-flask)
-- [Timeouts](#timeouts)
-- [Elements](#elements)
-- [Attachments](#attachments)
-- [Templates](#templates)
-- [Sender Actions](#sender-actions)
-- [Quick Replies](#quick-replies)
-- [Thread settings](#thread-settings)
-
-<!-- /MarkdownTOC -->
-
-<a name="installation"></a>
 ## Installation
 
-Install from pip
-
-```bash
-pip install fbmessenger
+Install from PyPI:
+```sh
+pip install chatbotAI
 ```
 
-<a name="facebook-app-setup"></a>
-### Facebook app setup
-
-- [Create a page](https://www.facebook.com/pages/create/) for your app, if you don't already have one
-- [Create an app](https://developers.facebook.com/quickstarts/?platform=web)
-- Add the Messenger product
-- Select the Page to generate a page token
-- Use [App Secret](https://developers.facebook.com/docs/graph-api/securing-requests/) (optional)
-
-
-<a name="example-usage-with-flask"></a>
-## Example usage with Flask
-
-First you need to create a verify token, this can be any string e.g.
-
-```bash
-'my_verify_token'
+install from github:
+```sh
+git clone https://github.com/ahmadfaizalbh/Chatbot.git
+cd Chatbot
+python setup.py install
 ```
 
-### Messenger class
+## Demo
+```shell
+>>> from chatbot import demo
+>>> demo()
+*Sim Hi, how are you?
+> i'm fine
+Nice to know that you are fine  
+> quit
+Thank you for talking with me.
+>>> 
+```
 
-We need to extend the `BaseMessenger` abstract class and implement methods for each of the following subscription fields.
-
-- `message`
-- `delivery`
-- `read`
-- `optin`
-- `postback`
-- `account_linking`
+## Sample Code (with wikipedia search API integration)
 
 ```python
-from fbmessenger import BaseMessenger
+from chatbot import Chat, register_call
+import wikipedia
 
 
-class Messenger(BaseMessenger):
-    def __init__(self, page_access_token, app_secret=None):
-        self.page_access_token = page_access_token
-        self.app_secret = app_secret
-        self.client = MessengerClient(self.page_access_token, app_secret=self.app_secret)
+@register_call("whoIs")
+def who_is(session, query):
+    try:
+        return wikipedia.summary(query)
+    except Exception:
+        for new_query in wikipedia.search(query):
+            try:
+                return wikipedia.summary(new_query)
+            except Exception:
+                pass
+    return "I don't know about "+query
 
-    def message(self, message):
-        self.send({'text': 'Received: {0}'.format(message['message']['text'])}, 'RESPONSE')
-
-    def delivery(self, message):
-        pass
-
-    def read(self, message):
-        pass
-
-    def account_linking(self, message):
-        pass
-
-    def postback(self, message):
-        pass
-
-    def optin(self, message):
-        pass
+first_question="Hi, how are you?"
+Chat("examples/Example.template").converse(first_question)
 ```
 
+For Detail on how to build Facebook messenger bot checkout  [Facebook Integration.ipynb](https://github.com/ahmadfaizalbh/Meetup-Resources/blob/master/Facebook%20Integration.ipynb)
 
-### Create a route for the callback url
+For Jupyter notebook Chatbot checkout [Infobot built using NLTK-Chatbot](https://github.com/ahmadfaizalbh/Meetup-Resources/blob/master/How%20to%20build%20a%20bot.ipynb)
 
-This can be used to process any messages received and also to verify your app
+#### Sample Apps
+1. A sample facebook messenger bot built using [messengerbot](https://github.com/geeknam/messengerbot/pulls), [Django](https://github.com/django/django) and [NLTK-Chatbot](#chatbot) is available here [Facebook messenger bot](https://github.com/ahmadfaizalbh/FacebookMessengerBot/)
+2. A sample microsoft bot built using [Microsoft Bot Connector Rest API - v3.0](https://docs.botframework.com/en-us/restapi/connector/#navtitle), [Django](https://github.com/django/django) and [NLTK-Chatbot](#chatbot) is available here [Micosoft Chatbot](https://github.com/ahmadfaizalbh/Microsoft-chatbot/)
 
+## List of feature supported in bot template
+1. [Memory](#memory)
+2. [Get matched group](#get-matched-group)
+3. [Recursion](#recursion)
+4. [Condition](#condition)
+5. [Change Topic](#change-topic)
+6. [Interact with python function](#interact-with-python-function)
+7. [REST API integration](#rest-api-integration)
+8. [Topic based group](#topic-based-group)
+9. [Learn](#learn)
+10. [To upper case](#to-upper-case)
+11. [To lower case](#to-lower-case)
+12. [Capitalize](#capitalize)
+13. [Previous](#previous)
+
+---
+
+## Memory
+
+#### Set Memory
+```
+{ variable : value }
+```
+In think mode
+```
+{! variable : value }
+```
+
+#### Get Memory
+```
+{ variable }
+```
+
+## Get matched group
+for grouping in regex refer [Python regular expression docs](https://docs.python.org/3/howto/regex.html#non-capturing-and-named-groups)
+#### Get N<sup>th</sup> matched group of client pattern
+```
+%N
+```
+Example to get first matched
+```
+%1
+```
+#### Get matching named group of client pattern
+```
+%Client_pattern_group_name
+```
+Example to get matching named group `person`
+```
+%person
+```
+
+#### Get N<sup>th</sup> matched group of bots message pattern
+```
+%!N
+```
+Example to get first matched
+```
+%!1
+```
+
+#### Get matching named group of bots message pattern
+```
+%!Bot_pattern_group_name
+```
+Example to get matching named group `region`
+```
+%!region
+```
+
+## Recursion
+Get response as if client said this new statement
+```
+{% chat statement %}
+```
+It will do a pattern match for statement
+
+## Condition
+``` 
+{% if condition %} do this first {% elif condition %} do this next {% else %} do otherwise {% endif %}
+```
+
+## Change Topic
+```
+{% topic TopicName %}
+```
+
+## Interact with python function
+##### In python 
 ```python
-import os
-from flask import Flask, request
-
-app = Flask(__name__)
-app.debug = True
-
-messenger = Messenger(os.environ.get('FB_PAGE_TOKEN'))
-
-@app.route('/webhook', methods=['GET', 'POST'])
-def webhook():
-    if request.method == 'GET':
-        if (request.args.get('hub.verify_token') == os.environ.get('FB_VERIFY_TOKEN')):
-            return request.args.get('hub.challenge')
-        raise ValueError('FB_VERIFY_TOKEN does not match.')
-    elif request.method == 'POST':
-        messenger.handle(request.get_json(force=True))
-    return ''
-
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0')
+@register_call("functionName")
+def function_name(session, query):
+    return "response string"
+```
+##### In template 
+```
+{% call functionName: value %}
 ```
 
-<a name="timeouts"></a>
-## Timeouts
-Any method on either the `BaseMessenger` or `MessengerClient` classes
-which perform network access accept an optional `timeout` parameter.
-This should be a number, and causes an exception to be raised if the
-server (ie. Facebook) has not started responding within `timeout`
-seconds (more precisely, if no bytes have been received on the
-underlying socket for `timeout` seconds). If no timeout is specified
-explicitly, requests do not time out. Note that in particular,
-`timeout` is *not* a time limit on the entire response download - just
-the initial connection.
-
-For example, this call will raise a socket timeout exception if
-the start of a response has not been received within 10 seconds:
-
+## REST API integration
+ 
+### In API.json file
+ ```
+{
+    "APIName":{
+        "auth" : {
+            "url":"https://your_rest_api_url/login.json",
+            "method":"POST",
+            "data":{
+                "user":"Your_Username",
+                "password":"Your_Password"
+            }
+        },
+        "MethodName" : {
+            "url":"https://your_rest_api_url/GET_method_Example.json",
+            "method":"GET",
+            "params":{
+                "key1":"value1",
+                "key2":"value2",
+                ...
+            },
+            "value_getter":[order in which data has to be picked from json response]
+        },
+        "MethodName1" : {
+            "url":"https://your_rest_api_url/GET_method_Example.json",
+            "method":"POST",
+            "data":{
+                "key1":"value1",
+                "key2":"value2",
+                ...
+            },
+            "value_getter":[order in which data has to be picked from json response]
+        },
+        "MethodName2" : {
+            ...
+        },
+        ...
+    },
+    "APIName2":{
+        ...
+    },
+    ...
+}
 ```
-messenger.send({'text': msg}, 'RESPONSE', timeout=10)
+*If authentication is required only then `auth` method is needed.The `data` and `params` defined in pi.json file acts as defult values and all key value pair defined in template file overrides the default value.`value_getter` consistes of list of keys in order using which info from json will be collected.*
+
+### In Template file
 ```
-
-If no `timeout` is provided (the default) then connection attempts will
-not time out.
-
-<a name="elements"></a>
-## Elements
-
-Import the elements (or just the ones you need)
-
-	from fbmessenger import elements
-
-### Messaging type
-Starting from 7th May 2018, Facebook requires that all message sends
-must include the `messaging_type` property:
-
-  https://developers.facebook.com/docs/messenger-platform/reference/send-api
-
-This is passed in the `send()` calls below - in each case, we'll just
-use `RESPONSE`. You should use whatever value is appropriate for your
-application. Supported values are:
-
-- `RESPONSE` _(default)_
-- `UPDATE`
-- `MESSAGE_TAG`
-
-
-See [Messaging Types](https://developers.facebook.com/docs/messenger-platform/send-messages/#messaging_types)
-for more information.
-
-### Notification Type
-
-Any of the elements below may be sent in conjunction with a notification
-type (see the [Send API documentation](https://developers.facebook.com/docs/messenger-platform/reference/send-api/#payload)
-for more details). `notification_type` is an optional parameter to the
-`.send()` call. For example:
-
-```python
-messenger.send({'text': msg}, 'RESPONSE', notification_type='REGULAR')
+[ APIName:MethodName,Key1:value1 (,Key*:value*) ]
 ```
+you can have any number of key value pair and all key value pair will override data or params depending on `method`, if `method` is `POST` then it overrides data and if method is `GET` then it overrides `params`.
 
-Supported values are are:
-- `REGULAR` _(default)_
-- `SILENT_PUSH`
-- `NO_PUSH`
-
-### Message Tags
-
-Message tags give you the ability to send messages to a person outside of the normally allowed 24-hour window 
-for a limited number of purposes that require continual notification or updates.
-
-```python
-messenger.send({'text': msg}, 'MESSAGE_TAG', tag='NON_PROMOTIONAL_SUBSCRIPTION')
+## Topic based group 
+```
+{% group topicName %}
+  {% block %}
+      {% client %}client says {% endclient %}
+      {% response %}response text{% endresponse %}
+  {% endblock %}
+  ...
+{% endgroup %}
 ```
 
-Supported values are are:
-- `BUSINESS_PRODUCTIVITY`
-- `COMMUNITY_ALERT`
-- `CONFIRMED_EVENT_REMINDER`
-- `NON_PROMOTIONAL_SUBSCRIPTION`
-- for more see [Supported Tags](https://developers.facebook.com/docs/messenger-platform/send-messages/message-tags#supported_tags)
-
-See [Message Tags](https://developers.facebook.com/docs/messenger-platform/send-messages/message-tags)
-for more information.
-
-### Text
-
-You can pass a simple dict or use the Class
-
-```python
-messenger.send({'text': msg}, 'RESPONSE')
-
-elem = elements.Text('Your Message')
-messenger.send(elem.to_dict(), 'RESPONSE')
+## Learn
+```
+{% learn %}
+  {% group topicName %}
+    {% block %}
+        {% client %}client says {% endclient %}
+        {% response %}response text{% endresponse %}
+    {% endblock %}
+    ...
+  {% endgroup %}
+  ...
+{% endlearn %}
 ```
 
-### Web button
-
-```python
-btn = elements.Button(title='Web button', url='http://example.com')
-messenger.send(btn.to_dict(), 'RESPONSE')
+## To upper case
+```
+{% up string %}
 ```
 
-### Payload button
-
-To use these buttons you must have the `message_deliveries` subscription enabled
-
-```python
-btn = elements.Button(title='Postback button', payload='payload')
-messenger.send(btn.to_dict(), 'RESPONSE')
+## To lower case
+```
+{% low string %}
 ```
 
-<a name="attachments"></a>
-## Attachments
-
-You can upload attachments to Facebook for use in their other APIs:
-
-```python
-attachment = attachments.Image(url='https://example.com/image.jpg')
-client = MessengerClient(page_access_token=12345678)
-res = client.upload_attachment(attachment)
-print(res)
-{"attachment_id": "12345"}
+## Capitalize
+```
+{% cap string %}
 ```
 
-### Images
-
-```python
-image = attachments.Image(url='http://example.com/image.jpg')
-messenger.send(image.to_dict(), 'RESPONSE')
+## Previous
+```
+{% block %}
+    {% client %}client's statement pattern{% endclient %}
+    {% prev %}previous bot's statement pattern{% endprev %}
+    {% response %}response string{% endresponse %}
+{% endblock %}
 ```
 
-### Audio
 
-```python
-audio = attachments.Image(url='http://example.com/audio.mp3')
-messenger.send(audio.to_dict(), 'RESPONSE')
-```
+![Chatbot AI flow Diagram](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/ChatBot%20AI.png)
 
-### Video
-
-```python
-video = attachments.Video(url='http://example.com/video.mp4')
-messenger.send(video.to_dict(), 'RESPONSE')
-```
-
-### Files
-
-```python
-file = attachments.File(url='http://example.com/file.txt')
-messenger.send(file.to_dict(), 'RESPONSE')
-```
-
-<a name="templates"></a>
-## Templates
-
-Import the templates (or just the ones you need)
-
-	from fbmessenger import templates
-
-### Generic template
-
-```python
-btn = elements.Button(title='Web button', url='http://facebook.com')
-elems = elements.Element(
-    title='Element',
-    item_url='http://facebook.com',
-    image_url='http://facebook.com/image.jpg',
-    subtitle='Subtitle',
-    buttons=[
-        btn
-    ]
-)
-res = templates.GenericTemplate(elements=[elems])
-messenger.send(res.to_dict(), 'RESPONSE')
-```
-
-### Button template
-
-```python
-btn = elements.Button(title='Web button', url='http://facebook.com')
-btn2 = elements.Button(title='Postback button', payload='payload')
-res = templates.ButtonTemplate(
-    text='Button template',
-    buttons=[btn, btn2]
-)
-messenger.send(res.to_dict(), 'RESPONSE')
-```
-
-### Receipt template
-
-```python
-element = elements.Element(
-    title='Classic White T-Shirt',
-    subtitle='100% Soft and Luxurious Cotton',
-    quantity=2,
-    price=50,
-    currency='USD',
-    image_url='http://petersapparel.parseapp.com/img/whiteshirt.png',
-)
-adjustment1 = elements.Adjustment(name='New Customer Discount', amount=20)
-adjustment2 = elements.Adjustment(name='$10 Off Coupon', amount=10)
-address = elements.Address(
-    street_1='1 Hacker Way',
-    city='Menlo Park',
-    postal_code='94025',
-    state='CA',
-    country='US'
-)
-summary = elements.Summary(
-    subtotal=75.00,
-    shipping_cost=4.95,
-    total_tax=6.19,
-    total_cost=56.14
-)
-res = templates.ReceiptTemplate(
-    recipient_name='Stephane Crozatier',
-    order_number='12345678902',
-    currency='USD',
-    payment_method='Visa 2345',
-    order_url='http://petersapparel.parseapp.com/order?order_id=123456',
-    timestamp='1428444852',
-    address=address,
-    summary=summary,
-    adjustments=[adjustment1, adjustment2],
-    elements=[element]
-)
-messenger.send(res.to_dict(), 'RESPONSE')
-```
-
-### Media template
-```
-btn = elements.Button(
-    button_type='web_url',
-    title='Web button',
-    url='http://facebook.com'
-)
-attachment = attachments.Image(attachment_id='12345')
-res = templates.MediaTemplate(attachment, buttons=[btn])
-messenger.send(res.to_dict())
-```
-
-<a name="sender-actions"></a>
-## Sender Actions
-
-### Typing on
-
-```python
-typing_on = SenderAction(sender_action='typing_on')
-messenger.send_action(typing_on.to_dict())
-```
-
-### Typing off
-
-```python
-typing_ffn = SenderAction(sender_action='typing_off')
-messenger.send_action(typing_off.to_dict())
-```
-
-### Mark seen
-
-```python
-mark_seen = SenderAction(sender_action='mark_seen')
-messenger.send_action(mark_seen.to_dict())
-```
-
-<a name="quick-replies"></a>
-## Quick Replies
-
-```python
-quick_reply_1 = QuickReply(title='Do something', payload='Send me this payload')
-quick_reply_2 = QuickReply(title='Do something else', payload='Send me this other payload')
-quick_replies = QuickReplies(quick_replies=[
-	quick_reply_1,
-	quick_reply_2
-])
-text = { text: 'A message' }
-text['quick_replies'] = quick_replies.to_dict()
-messenger.send(text, 'RESPONSE')
-```
-
-<a name="thread-settings"></a>
-## Messenger Profile
-
-### Greeting Text
-
-```python
-
-from fbmessenger.thread_settings import GreetingText, MessengerProfile
-
-greeting_text = GreetingText('Welcome to my bot')
-messenger_profile = MessengerProfile(greetings=[greeting_text])
-messenger.set_messenger_profile(messenger_profile.to_dict())
-```
-### Get Started Button
-
-```python
-from fbmessenger.thread_settings import GetStartedButton, MessengerProfile
-
-get_started = GetStartedButton(payload='GET_STARTED')
-messenger_profile = MessengerProfile(get_started=get_started)
-messenger.set_messenger_profile(messenger_profile.to_dict())
-```
-
-You can then check for this payload in the `postback` method
-
-### Persistent Menu
-
-```python
-from fbmessenger.thread_settings import PersistentMenu, PersistentMenuItem, MessengerProfile
-
-menu_item_1 = PersistentMenuItem(item_type='web_url', title='Menu Item 1', url='https://facebook.com')
-menu_item_2 = PersistentMenuItem(item_type='postback', title='Menu Item 2', payload='PAYLOAD')
-
-menu = PersistentMenu(menu_items=[menu_item_1, menu_item_2])
-
-messenger_profile = MessengerProfile(persistent_menus=[menu])
-messenger.set_messenger_profile(messenger_profile.to_dict())
-```
