@@ -16,9 +16,11 @@ https://youtu.be/1QRGDIqNlME
 
 
 ## -------------->> Basic Features <<----------------------
-### someone message
-*bot  
-returns with reply bol bc
+
+
+### Message reply
+*Sim  
+returns with reply Please enter full message
 
 #### To get current weather of any city
 -> weather of city_name  
