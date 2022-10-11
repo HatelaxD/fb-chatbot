@@ -18,7 +18,7 @@ https://youtu.be/1QRGDIqNlME
 ## -------------->> Basic Features <<----------------------
 ### someone message
 *bot  
-returns bol bc
+returns with reply bol bc
 
 #### To get current weather of any city
 -> weather of city_name  
