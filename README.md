@@ -20,7 +20,7 @@ https://youtu.be/1QRGDIqNlME
 
 ### Message reply
 *Sim  
-returns with reply Please enter full message
+Reply Please enter full message
 
 #### To get current weather of any city
 -> weather of city_name  
