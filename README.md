@@ -31,7 +31,7 @@ returns current weather of entered city
 returns meaning of entered word
 
 #### Language translation
--> translate hello to ne  
+*sim translate hello to ne  
 ne(nepali)  
 ja(japanese)  
 es(spainish)  
