@@ -1,281 +1,107 @@
-[![Downloads](https://pepy.tech/badge/chatbotai)](https://pepy.tech/project/chatbotai)
-[![PyPI version](https://badge.fury.io/py/chatbotAI.svg)](https://badge.fury.io/py/chatbotAI)
-![Upload Python Package](https://github.com/ahmadfaizalbh/Chatbot/workflows/Upload%20Python%20Package/badge.svg)
-[![CodeQL](https://github.com/ahmadfaizalbh/Chatbot/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/ahmadfaizalbh/Chatbot/actions/workflows/codeql-analysis.yml)
+# Facebook-Messenger-Bot
 
-# ChatBotAI
-Python chatbot AI that helps in creating a python based chatbot with
-minimal coding. This provides both bots AI and chat handler and also
-allows easy integration of REST API's and python function calls which
-makes it unique and more powerful in functionality. This AI provides
-numerous features like learn, memory, conditional switch, topic-based
-conversation handling, etc.
+The FB Messenger chatbot that I trained to talk like me. The associated [blog post](https://adeshpande3.github.io/adeshpande3.github.io/How-I-Used-Deep-Learning-to-Train-a-Chatbot-to-Talk-Like-Me).
 
+## Overview
 
-![Demo GUI](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/demo_gui.gif)
+For this project, I wanted to train a Sequence To Sequence model on my past conversation logs from various social media sites. You can read more about the motivation behind this approach, the details of the ML model, and the purpose of each Python script in the blog post, but I want to use this README to explain how you can train your own chatbot to talk like you.
 
-![Demo](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/demo.gif)
-![Clothing assistance](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/clothing.gif)
-![Remainder](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/reminder.gif)
+## Requirements and Installation
+In order to run these scripts, you'll need the following libraries.
 
-## Installation
+* **[TensorFlow](https://www.tensorflow.org/install/) version 1.0 or later**
+* [NumPy](https://docs.scipy.org/doc/numpy/user/install.html)
+* [Pandas](https://pandas.pydata.org/pandas-docs/stable/install.html)
+* [Sklearn](http://scikit-learn.org/stable/install.html)
 
-Install from PyPI:
-```sh
-pip install chatbotAI
-```
+## How You Can Train Your Own
 
-install from github:
-```sh
-git clone https://github.com/ahmadfaizalbh/Chatbot.git
-cd Chatbot
-python setup.py install
-```
+1. Download and unzip [this entire repository from GitHub](https://github.com/adeshpande3/Facebook-Messenger-Bot), either interactively, or by entering the following in your Terminal.
+    ```bash
+    git clone https://github.com/adeshpande3/Facebook-Messenger-Bot.git
+    ```
 
-## Demo
-```shell
->>> from chatbot import demo
->>> demo()
-*Sim Hi, how are you?
-> i'm fine
-Nice to know that you are fine  
-> quit
-Thank you for talking with me.
->>> 
-```
+2. Navigate into the top directory of the repo on your machine
+    ```bash
+    cd Facebook-Messenger-Bot
+    ```
+3. Our first job is to download all of your conversation data from various social media sites. For me, I used Facebook, Google Hangouts, and LinkedIn. If you have other sites that you're getting data from, that's fine. You just will have to create a new method in [createDataset.py](https://github.com/adeshpande3/Facebook-Messenger-Bot/blob/master/createDataset.py).
 
-## Sample Code (with wikipedia search API integration)
+* **Facebook Data**: Download your data from [here](https://www.facebook.com/help/131112897028467). Once downloaded, you should have a fairly large file called **messages.htm**. It'll be a pretty large file (over 190 MB for me). We're going to need to parse through this large file, and extract all of the conversations. To do this, we'll use this [tool](https://github.com/ownaginatious/fbchat-archive-parser) that Dillon Dixon has kindly open sourced. You'll go ahead and install that tool by running
+    ```bash
+    pip install fbchat-archive-parser
+    ```    
+    and then running:
+    ```bash
+    fbcap ./messages.htm > fbMessages.txt
+    ```
+    This will give you all your Facebook conversations in a fairly unified text file. Thanks Dillon! Go ahead and then store that file in your Facebook-Messenger-Bot folder.
 
-```python
-from chatbot import Chat, register_call
-import wikipedia
+* **LinkedIn Data**: Download your data from [here](https://www.linkedin.com/psettings/member-data). Once downloaded, you should see an **inbox.csv** file. We won't need to take any other steps here, we just want to copy it over to our folder.
 
+* **Google Hangouts Data**: Download your data form [here](https://takeout.google.com/settings/takeout/custom/chat). Once downloaded, you'll get a JSON file that we'll need to parse through. To do this, we'll use this [parser](https://takeout.google.com/settings/takeout/custom/chat) found through this phenomenal [blog post](https://blog.jay2k1.com/2014/11/10/how-to-export-and-backup-your-google-hangouts-chat-history/). We'll want to save the data into text files, and then copy the folder over to ours.
 
-@register_call("whoIs")
-def who_is(session, query):
-    try:
-        return wikipedia.summary(query)
-    except Exception:
-        for new_query in wikipedia.search(query):
-            try:
-                return wikipedia.summary(new_query)
-            except Exception:
-                pass
-    return "I don't know about "+query
+    At the end of all this, you should have a directory structure that looks like this. Make sure you rename the folders and file names if yours are different.
 
-first_question="Hi, how are you?"
-Chat("examples/Example.template").converse(first_question)
-```
+    ![](Images/DirectoryStructure.png)
 
-For Detail on how to build Facebook messenger bot checkout  [Facebook Integration.ipynb](https://github.com/ahmadfaizalbh/Meetup-Resources/blob/master/Facebook%20Integration.ipynb)
+* **Discord Data** : You can extract your discord chatlogs by using this awesome [DiscordChatExporter](https://github.com/Tyrrrz/DiscordChatExporter) made by [Tyrrrz](https://github.com/Tyrrrz). Follow its documentation to extract your desired singular chat logs in `.txt` format (this is important). You can then put them all in a folder named `DiscordChatLogs` in the repo directory.
 
-For Jupyter notebook Chatbot checkout [Infobot built using NLTK-Chatbot](https://github.com/ahmadfaizalbh/Meetup-Resources/blob/master/How%20to%20build%20a%20bot.ipynb)
+* **WhatsApp Data**: Make sure you have a cell phone and put it in the US date-format if it is not already (this will be important later when you parse the log file to .csv). You can not use whatsApp web for this purpose. Open the chat you want to send, tap the menu button, tap more, then click "Email Chat". Send the email to yourself and download it to your computer. This will give you a .txt file, to parse it, we'll convert it to .csv. To do this go to [this link](http://ocpl.com.bd/whatsapp_parser/) and enter all the text in your log file. Click export, download the csv file and simply store it in your Facebook-Messenger-Bot folder under the name "whatsapp_chats.csv".
 
-#### Sample Apps
-1. A sample facebook messenger bot built using [messengerbot](https://github.com/geeknam/messengerbot/pulls), [Django](https://github.com/django/django) and [NLTK-Chatbot](#chatbot) is available here [Facebook messenger bot](https://github.com/ahmadfaizalbh/FacebookMessengerBot/)
-2. A sample microsoft bot built using [Microsoft Bot Connector Rest API - v3.0](https://docs.botframework.com/en-us/restapi/connector/#navtitle), [Django](https://github.com/django/django) and [NLTK-Chatbot](#chatbot) is available here [Micosoft Chatbot](https://github.com/ahmadfaizalbh/Microsoft-chatbot/)
+  **NOTE**: The parser provided in the above link seems to have been removed. If you still have a `.csv` file *in the correct format*, you may still use that. Otherwise download your whatsapp chat logs as `.txt` files and put them all in a folder named `WhatsAppChatLogs` in the repo directory. `createDataset.py` will work with these files instead if, and only if, it **DOES NOT** find a `.csv` file named `whatsapp_chats.csv`.
+  
+    In case you use `.txt` chat logs, note that the expected format is-
+    ```
+    [20.06.19, 15:58:57] Loris: Welcome to the chat example
+    [20.06.19, 15:59:07] John: Thanks
+    ```
+    (OR)
+    ```
+    12/28/19, 21:43 - Loris: Welcome to the chat example
+    12/28/19, 21:43 - John: Thanks
+    ```
 
-## List of feature supported in bot template
-1. [Memory](#memory)
-2. [Get matched group](#get-matched-group)
-3. [Recursion](#recursion)
-4. [Condition](#condition)
-5. [Change Topic](#change-topic)
-6. [Interact with python function](#interact-with-python-function)
-7. [REST API integration](#rest-api-integration)
-8. [Topic based group](#topic-based-group)
-9. [Learn](#learn)
-10. [To upper case](#to-upper-case)
-11. [To lower case](#to-lower-case)
-12. [Capitalize](#capitalize)
-13. [Previous](#previous)
+4. Now that we have all our conversation logs in a clean format, we can go ahead and create our dataset. In our directory, let's run:
+    ```bash
+    python createDataset.py
+    ```
+    You'll then be prompted to enter your name (so that the script knows who to look for), and which social media sites you have data for. This script will create a file named **conversationDictionary.npy** which is a Numpy object that contains pairs in the form of (FRIENDS_MESSAGE, YOUR RESPONSE). A file named **conversationData.txt** will also be created. This is simply a large text file the dictionary data in a unified form.
 
----
+5. Now that we have those 2 files, we can start creating our word vectors through a Word2Vec model. This step is a little different from the others. The Tensorflow function we see later on (in seq2seq.py) actually also handles the embedding part. So you can either decide to train your own vectors or have the seq2seq function do it jointly, which is what I ended up doing.**If you want to create your own word vectors though Word2Vec, say y at the prompt (after running the following). If you don't, then that's fine, reply n and this function will only create the wordList.txt.**
+    ```bash
+    python Word2Vec.py
+    ```
+    If you run word2vec.py in its entirety, this will create 4 different files. **Word2VecXTrain.npy** and **Word2VecYTrain.npy** are the training matrices that Word2Vec will use. We save these in our folder, in case we need to train our Word2Vec model again with different hyperparameters. We also save **wordList.txt**, which simply contains all of the unique words in our corpus. The last file saved is **embeddingMatrix.npy**  which is a Numpy matrix that contains all of the generatedword vectors.
 
-## Memory
+6. Now, we can use create and train our Seq2Seq model.
+    ```bash
+    python Seq2Seq.py
+    ```
+    This will create 3 or more different files. **Seq2SeqXTrain.npy** and **Seq2SeqYTrain.npy** are the training matrices that Seq2Seq will use. Again, we save these just in case we want to make changes to our model architecture, and we don't want to recompute our training set. The last file(s) will be .ckpt files which holds our saved Seq2Seq model. Models will be saved at different time periods in the training loop. These will be used and deployed once we've created our chatbot.
 
-#### Set Memory
-```
-{ variable : value }
-```
-In think mode
-```
-{! variable : value }
-```
+7. Now that we have a saved model, let's now create our Facebook chatbot. To do so, I'd recommend following this [tutorial](https://github.com/jw84/messenger-bot-tutorial). You don't need to read anything beneath the "Customize what the bot says" section. Our Seq2Seq model will handle that part. **IMPORTANT - The tutorial will tell you to create a new folder where the Node project will lie.** Keep in mind this folder will be different from our folder. You can think of this folder as being where our data preprocessing and model training lie, while the other folder is strictly reserved for the Express app (EDIT: I believe you can follow the tutorial's steps inside of our folder and just create the Node project, Procfile, and index.js files in here if you want). The tutorial itself should be sufficient, but here's a summary of the steps.
 
-#### Get Memory
-```
-{ variable }
-```
+    - Build the server, and host on Heroku.
+    - Create a Facebook App/Page, set up the webhook, get page token, and trigger the app.
+    - Add an API endpoint to **index.js** so that the bot can respond with messages.
 
-## Get matched group
-for grouping in regex refer [Python regular expression docs](https://docs.python.org/3/howto/regex.html#non-capturing-and-named-groups)
-#### Get N<sup>th</sup> matched group of client pattern
-```
-%N
-```
-Example to get first matched
-```
-%1
-```
-#### Get matching named group of client pattern
-```
-%Client_pattern_group_name
-```
-Example to get matching named group `person`
-```
-%person
-```
+    After following the steps correctly, you should be able to message the chatbot, and get responses back.
 
-#### Get N<sup>th</sup> matched group of bots message pattern
-```
-%!N
-```
-Example to get first matched
-```
-%!1
-```
+    ![](Images/DefaultChatbotResponse.png)
 
-#### Get matching named group of bots message pattern
-```
-%!Bot_pattern_group_name
-```
-Example to get matching named group `region`
-```
-%!region
-```
+8. Ah, you're almost done! Now, we have to create a Flask server where we can deploy our saved Seq2Seq model. I have the code for that server [here](https://github.com/adeshpande3/Chatbot-Flask-Server). Let's talk about the general structure. Flask servers normally have one main .py file where you define all of the endpoints. This will be [app.py](https://github.com/adeshpande3/Chatbot-Flask-Server/blob/master/app.py) in our case. This whill be where we load in our model. You should create a folder called 'models', and fill it with 4 files (a checkpoint file, a data file, an index file, and a meta file). These are the files that get created when you save a Tensorflow model.
 
-## Recursion
-Get response as if client said this new statement
-```
-{% chat statement %}
-```
-It will do a pattern match for statement
+![](Images/Models.png)
 
-## Condition
-``` 
-{% if condition %} do this first {% elif condition %} do this next {% else %} do otherwise {% endif %}
-```
+In this app.py file, we want to create a route (/prediction in my case) where the input to the route will be fed into our saved model, and the decoder output is the string that is returned. Go ahead and take a closer look at app.py if that's still a bit confusing. Now that you have your app.py and your models (and other helper files if you need them), you can deploy your server. We'll be using Heroku again. There are a lot of different tutorials on deploying Flask servers to Heroku, but I like [this one](https://coderwall.com/p/pstm1w/deploying-a-flask-app-at-heroku) in particular (Don't need the Foreman and Logging sections).
 
-## Change Topic
-```
-{% topic TopicName %}
-```
+9. Once you have your Flask server deployed, you'll need to edit your index.js file so that the Express app can communicate with your Flask server. Basically, you'll need to send a POST request to the Flask server with the input message that your chatbot receives, receive the output, and then use the sendTextMessage function to have the chatbot respond to the message. If you've cloned my repository, all you really need to do is replace the URL of the request function call with the URL of your own server.
 
-## Interact with python function
-##### In python 
-```python
-@register_call("functionName")
-def function_name(session, query):
-    return "response string"
-```
-##### In template 
-```
-{% call functionName: value %}
-```
+There ya go. You should be able to send messages to the chatbot, and see some interesting responses that (hopefully) resemble yourelf in some way.
 
-## REST API integration
- 
-### In API.json file
- ```
-{
-    "APIName":{
-        "auth" : {
-            "url":"https://your_rest_api_url/login.json",
-            "method":"POST",
-            "data":{
-                "user":"Your_Username",
-                "password":"Your_Password"
-            }
-        },
-        "MethodName" : {
-            "url":"https://your_rest_api_url/GET_method_Example.json",
-            "method":"GET",
-            "params":{
-                "key1":"value1",
-                "key2":"value2",
-                ...
-            },
-            "value_getter":[order in which data has to be picked from json response]
-        },
-        "MethodName1" : {
-            "url":"https://your_rest_api_url/GET_method_Example.json",
-            "method":"POST",
-            "data":{
-                "key1":"value1",
-                "key2":"value2",
-                ...
-            },
-            "value_getter":[order in which data has to be picked from json response]
-        },
-        "MethodName2" : {
-            ...
-        },
-        ...
-    },
-    "APIName2":{
-        ...
-    },
-    ...
-}
-```
-*If authentication is required only then `auth` method is needed.The `data` and `params` defined in pi.json file acts as defult values and all key value pair defined in template file overrides the default value.`value_getter` consistes of list of keys in order using which info from json will be collected.*
+## Samples
 
-### In Template file
-```
-[ APIName:MethodName,Key1:value1 (,Key*:value*) ]
-```
-you can have any number of key value pair and all key value pair will override data or params depending on `method`, if `method` is `POST` then it overrides data and if method is `GET` then it overrides `params`.
+![](Images/Samples.png)
 
-## Topic based group 
-```
-{% group topicName %}
-  {% block %}
-      {% client %}client says {% endclient %}
-      {% response %}response text{% endresponse %}
-  {% endblock %}
-  ...
-{% endgroup %}
-```
-
-## Learn
-```
-{% learn %}
-  {% group topicName %}
-    {% block %}
-        {% client %}client says {% endclient %}
-        {% response %}response text{% endresponse %}
-    {% endblock %}
-    ...
-  {% endgroup %}
-  ...
-{% endlearn %}
-```
-
-## To upper case
-```
-{% up string %}
-```
-
-## To lower case
-```
-{% low string %}
-```
-
-## Capitalize
-```
-{% cap string %}
-```
-
-## Previous
-```
-{% block %}
-    {% client %}client's statement pattern{% endclient %}
-    {% prev %}previous bot's statement pattern{% endprev %}
-    {% response %}response string{% endresponse %}
-{% endblock %}
-```
-
-
-![Chatbot AI flow Diagram](https://raw.githubusercontent.com/ahmadfaizalbh/Chatbot/master/images/ChatBot%20AI.png)
-
+**Please let me know if you have any issues or if you have any suggestions for making this README better. If you thought a certain step was unclear, let me know and I'll try my best to edit the README and make any clarifications.**
